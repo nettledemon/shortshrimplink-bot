@@ -1,0 +1,60 @@
+services:
+  # постгреха
+  db:
+    image: postgres:15
+    container_name: shortshrimp_db
+    environment:
+      POSTGRES_DB: shortshrimplink_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - shortshrimp_network
+
+  # фастапи
+  web:
+    build: .
+    container_name: shortshrimp_web
+    command: uvicorn src.web:app --host 0.0.0.0 --port 8000
+    environment:
+      PYTHONPATH: /app
+      DJANGO_SETTINGS_MODULE: src.db_settings
+      DB_HOST: db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      BASE_URL: http://localhost:8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - shortshrimp_network
+
+  # тг-бот
+  bot:
+    build: .
+    container_name: shortshrimp_bot
+    command: python src/main.py
+    environment:
+      PYTHONPATH: /app
+      DJANGO_SETTINGS_MODULE: src.db_settings
+      DB_HOST: db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      BOT_TOKEN: ${BOT_TOKEN}
+      BASE_URL: http://web:8000
+    depends_on:
+      - db
+      - web
+    networks:
+      - shortshrimp_network
+
+networks:
+  shortshrimp_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
