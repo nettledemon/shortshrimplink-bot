@@ -57,16 +57,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         existing_short_code = await get_short_code_by_long_url(long_url)
         if existing_short_code:
             short_url = get_full_short_url(existing_short_code)
-            await update.message.reply_text(f"Такая ссылка уже есть: {short_url}",
-        reply_markup=get_main_keyboard())
+            await update.message.reply_text(f"Такая ссылка уже есть: {short_url}")
+            await update.message.reply_text("Что дальше?", reply_markup=get_main_keyboard())
         else:
             short_code = generate_short_code()
             while await link_exists(short_code):
                 short_code = generate_short_code()
             await save_link(short_code, long_url)
             short_url = get_full_short_url(short_code)
-            await update.message.reply_text(f"Короткая ссылка: {short_url}",
-        reply_markup=get_main_keyboard())
+            await update.message.reply_text(f"Короткая ссылка: {short_url}")
+            await update.message.reply_text("Что дальше?", reply_markup=get_main_keyboard())
 
         context.user_data['waiting_for_link'] = False
     else:
